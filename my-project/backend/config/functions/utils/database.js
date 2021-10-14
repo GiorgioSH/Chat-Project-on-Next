@@ -28,9 +28,27 @@ async function userExists(id) {
         console.log("Error occured when fetching user", err);
     }
 }
-
+async function getUsersInRoom(room) {
+    console.log("whaasuuup")
+    try {
+        const usersInRoom = await strapi.services.userss.find({ room })
+        return usersInRoom;
+    } catch(err) {
+        console.log("Error.Try again!", err);
+    }
+}
+async function deleteUser(socketId) {
+    try {
+        const user = await strapi.services.userss.delete({ socketId: socketId });
+        return user;
+    } catch(err) {
+        console.log("Error while deleting the User", err);
+    }
+}
 module.exports = {
     findUser,
     createUser,
     userExists,
+    getUsersInRoom,
+    deleteUser
 }

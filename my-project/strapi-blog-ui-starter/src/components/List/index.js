@@ -3,12 +3,13 @@ import styled from 'styled-components';
 import { List as AntdList, Avatar} from 'antd';
 
 function List(props) {
+    console.log(props)
     return (
         <StyledList>
             <ListHeading>Active Users</ListHeading>
             <AntdList
                 itemLayout="horizontal"
-                dataSource={props.userss}
+                dataSource={props.users}
                 renderItem={user => (
                     <AntdList.Item>
                         <AntdList.Item.Meta

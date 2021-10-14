@@ -2,7 +2,9 @@
 const {
     findUser, 
     createUser,
-    userExists
+    userExists,
+    getUsersInRoom,
+    deleteUser
 } = require('./utils/database');
 
 module.exports = () => {
@@ -18,7 +20,6 @@ module.exports = () => {
         socket.on('join', async({ username, room }, callback) => {
             try {
                 const userExists = await findUser(username, room);
-                console.log('here', userExists)
                 if(userExists.length > 0) {
                     callback(`User ${username} already exists in room no${room}. Please select a different name or room`);
                 } else {
@@ -41,11 +42,15 @@ module.exports = () => {
                             user: 'bot',
                             text: `${user.username} has joined`,
                         });
-
+                        io.to(user.room).emit('roomInfo', {
+                            room: user.room,
+                            users: await getUsersInRoom(user.room)
+                            });
                     } else {
                         callback(`user could not be created. Try again!`)
                     }
                 }
+                
                 callback();
             } catch(err) {
                 console.log("Err occured, Try again!", err);
@@ -59,6 +64,10 @@ module.exports = () => {
                       user: user.username,
                       text: data.message,
                   });
+                //   io.to(user.room).emit('roomInfo', {
+                //     room: user.room,
+                //     users: await getUsersInRoom(user[0].room)
+                //     });
               } else {
                   callback(`User doesn't exist in the database. Rejoin the chat`)
               }
@@ -66,6 +75,25 @@ module.exports = () => {
           } catch(err) {
               console.log("err inside catch block", err);
           }
-});
+        });
+        socket.on('disconnect', async(data) => {
+            try {
+                console.log("DISCONNECTED!!!!!!!!!!!!");
+                const user = await deleteUser( socket.id);
+                console.log("deleted user is", user)
+                if(user.length > 0) {
+                    io.to(user[0].room).emit('message', {
+                        user: user[0].username,
+                        text: `User ${user[0].username} has left the chat.`,
+                    });  
+                    io.to(user[0].room).emit('roomInfo', {
+                        room: user[0].room,
+                        users: await getUsersInRoom(user[0].room)
+                    })
+                }
+            } catch(err) {
+                console.log("error while disconnecting", err);
+            }
+        });
     });
 };

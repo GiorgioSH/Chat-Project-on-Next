@@ -12,11 +12,12 @@ import {
   SendIcon
 } from './styles';
 import { Input } from 'antd';
+import List from "../../components/List";
 
 function ChatRoom(props) {
     const {username, room, joinData } = props;
     const [messages, setMessages] = useState([]);
-    const [userss, setUsers] = useState([]);
+    const [users, setUsers] = useState([]);
     const [message, setMessage] = useState([]);
 
     useEffect(() => {
@@ -25,17 +26,23 @@ function ChatRoom(props) {
             socket.on('message', (message, error) => {
                 setMessages(msgs => [ ...msgs, message ]);
             });
+            socket.on("roomInfo", (users) => {
+                setUsers(users);
+            });
         } 
         else {
             history.push('/join')
         }
      }, [joinData])
+
+    
+
     const handleChange = (e) => {
-    setMessage(e.target.value);
+        setMessage(e.target.value);
     }
     
     const handleClick = (e) => {
-    sendMessage(message);
+        sendMessage(message);
     }
     
     const sendMessage = (message) => {
@@ -56,6 +63,7 @@ function ChatRoom(props) {
         <ChatContainer>
             <Header room={room} />
             <StyledContainer>
+            <List users={users.users}/>
                 <ChatBox>
                     <Messages 
                         messages={messages} 
